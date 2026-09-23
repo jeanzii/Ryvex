@@ -1,0 +1,25 @@
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Java
+target/
+*.class
+
+# Gradle
+.gradle/
+build/
+
+# Maven
+.mvn/
+target/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+application-local.properties
+application-local.yml
