@@ -6,6 +6,9 @@ import com.ryvex.server.dto.auth.LoginRequest;
 import com.ryvex.server.dto.auth.LoginResponse;
 import com.ryvex.server.service.AuthService;
 import com.ryvex.server.dto.auth.MeResponse;
+import com.ryvex.server.dto.auth.LogoutRequest;
+import com.ryvex.server.dto.auth.RefreshRequest;
+import com.ryvex.server.dto.auth.TokenResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +48,20 @@ public class AuthController {
                 jwt.getSubject(),
                 jwt.getClaimAsString("role")
         );
+    }
+
+    @PostMapping("/refresh")
+    public TokenResponse refresh(
+            @Valid @RequestBody RefreshRequest request
+    ) {
+        return authService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(
+            @Valid @RequestBody LogoutRequest request
+    ) {
+        authService.logout(request);
     }
 }

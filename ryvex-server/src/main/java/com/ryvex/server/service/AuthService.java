@@ -6,6 +6,9 @@ import com.ryvex.server.dto.auth.LoginRequest;
 import com.ryvex.server.dto.auth.LoginResponse;
 import com.ryvex.server.model.User;
 import com.ryvex.server.repository.UserRepository;
+import com.ryvex.server.dto.auth.LogoutRequest;
+import com.ryvex.server.dto.auth.RefreshRequest;
+import com.ryvex.server.dto.auth.TokenResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,15 +20,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public RegisterResponse register(RegisterRequest request) {
@@ -97,14 +103,52 @@ public class AuthService {
         JwtService.TokenResult token =
                 jwtService.createAccessToken(user);
 
+        JwtService.TokenResult accessToken =
+                jwtService.createAccessToken(user);
+
+        String refreshToken =
+                refreshTokenService
+                        .createRefreshToken(user);
+
         return new LoginResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole().name(),
-                token.token(),
+                accessToken.token(),
+                refreshToken,
                 "Bearer",
-                token.expiresAt()
+                accessToken.expiresAt()
+        );
+    }
+
+    public TokenResponse refresh(
+            RefreshRequest request
+    ) {
+
+        RefreshTokenService.RotatedRefreshToken rotated =
+                refreshTokenService.rotate(
+                        request.refreshToken()
+                );
+
+        JwtService.TokenResult accessToken =
+                jwtService.createAccessToken(
+                        rotated.user()
+                );
+
+        return new TokenResponse(
+                accessToken.token(),
+                rotated.refreshToken(),
+                "Bearer",
+                accessToken.expiresAt()
+        );
+    }
+
+    public void logout(
+            LogoutRequest request
+    ) {
+        refreshTokenService.revoke(
+                request.refreshToken()
         );
     }
 
