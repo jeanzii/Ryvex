@@ -9,6 +9,7 @@ import com.ryvex.server.repository.UserRepository;
 import com.ryvex.server.service.dashboard.DashboardActivityService;
 import com.ryvex.server.service.dashboard.DashboardAnalyticsService;
 import com.ryvex.server.service.dashboard.DashboardStatsService;
+import com.ryvex.server.service.dashboard.DashboardUserContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,8 +48,8 @@ public class DashboardService {
             String username
     ) {
 
-        User user =
-                findUser(
+        DashboardUserContext user =
+                findUserContext(
                         username
                 );
 
@@ -65,8 +66,8 @@ public class DashboardService {
                         );
 
         return new DashboardResponse(
-                user.getUsername(),
-                user.getRole().name(),
+                user.username(),
+                user.role(),
                 stats,
                 recentActivity
         );
@@ -76,8 +77,8 @@ public class DashboardService {
             String username
     ) {
 
-        User user =
-                findUser(
+        DashboardUserContext user =
+                findUserContext(
                         username
                 );
 
@@ -87,20 +88,27 @@ public class DashboardService {
                 );
     }
 
-    private User findUser(
+    private DashboardUserContext findUserContext(
             String username
     ) {
 
-        return userRepository
-                .findByUsernameIgnoreCase(
-                        username
-                )
-                .orElseThrow(
-                        () ->
-                                new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "User not found."
-                                )
-                );
+        User user =
+                userRepository
+                        .findByUsernameIgnoreCase(
+                                username
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND,
+                                                "User not found."
+                                        )
+                        );
+
+        return new DashboardUserContext(
+                user.getId(),
+                user.getUsername(),
+                user.getRole().name()
+        );
     }
 }

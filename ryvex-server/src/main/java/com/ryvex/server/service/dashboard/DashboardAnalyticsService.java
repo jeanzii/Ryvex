@@ -2,7 +2,6 @@ package com.ryvex.server.service.dashboard;
 
 import com.ryvex.server.dto.dashboard.DashboardAnalyticsResponse;
 import com.ryvex.server.dto.dashboard.DashboardProfitPointResponse;
-import com.ryvex.server.model.User;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,7 @@ public class DashboardAnalyticsService {
     }
 
     public DashboardAnalyticsResponse getAnalytics(
-            User user
+            DashboardUserContext user
     ) {
 
         List<DashboardProfitPointResponse> profitHistory =

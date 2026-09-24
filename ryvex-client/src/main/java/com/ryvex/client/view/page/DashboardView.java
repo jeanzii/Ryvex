@@ -2,33 +2,32 @@ package com.ryvex.client.view.page;
 
 import com.ryvex.client.auth.AuthSession;
 import com.ryvex.client.dto.dashboard.DashboardActivityResponse;
+import com.ryvex.client.dto.dashboard.DashboardAnalyticsResponse;
+import com.ryvex.client.dto.dashboard.DashboardProfitPointResponse;
 import com.ryvex.client.dto.dashboard.DashboardResponse;
 import com.ryvex.client.dto.dashboard.DashboardStatsResponse;
 import com.ryvex.client.service.ApiException;
 import com.ryvex.client.service.ApiService;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import com.ryvex.client.dto.dashboard.DashboardAnalyticsResponse;
-import com.ryvex.client.dto.dashboard.DashboardProfitPointResponse;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.ScrollPane;
 
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 public class DashboardView extends VBox {
 
@@ -51,7 +50,6 @@ public class DashboardView extends VBox {
     private final Label accountStatus;
 
     private final VBox recentActivityContent;
-
     private final StackPane analyticsContent;
 
     private final DateTimeFormatter chartDateFormatter =
@@ -89,7 +87,10 @@ public class DashboardView extends VBox {
         this.onFinance =
                 onFinance;
 
-        getStyleClass().add(
+        VBox dashboardContent =
+                new VBox();
+
+        dashboardContent.getStyleClass().add(
                 "content-area"
         );
 
@@ -218,7 +219,7 @@ public class DashboardView extends VBox {
                 serviceCard
         );
 
-        getChildren().addAll(
+        dashboardContent.getChildren().addAll(
                 title,
                 welcomeSubtitle,
                 statistics,
@@ -227,299 +228,49 @@ public class DashboardView extends VBox {
                 bottomRow
         );
 
+        ScrollPane scrollPane =
+                new ScrollPane(
+                        dashboardContent
+                );
+
+        scrollPane.setFitToWidth(
+                true
+        );
+
+        scrollPane.setHbarPolicy(
+                ScrollPane.ScrollBarPolicy.NEVER
+        );
+
+        scrollPane.setVbarPolicy(
+                ScrollPane.ScrollBarPolicy.AS_NEEDED
+        );
+
+        scrollPane.setPannable(
+                false
+        );
+
+        scrollPane.getStyleClass().add(
+                "dashboard-scroll-pane"
+        );
+
+        scrollPane.setMaxSize(
+                Double.MAX_VALUE,
+                Double.MAX_VALUE
+        );
+
+        getChildren().add(
+                scrollPane
+        );
+
+        VBox.setVgrow(
+                scrollPane,
+                Priority.ALWAYS
+        );
+
         showRecentActivityLoading();
 
         loadDashboard();
-
         loadAnalytics();
-    }
-
-    private VBox createAnalyticsCard() {
-
-        VBox card =
-                new VBox(
-                        12
-                );
-
-        card.getStyleClass().add(
-                "card"
-        );
-
-        Label title =
-                new Label(
-                        "Profit Analytics"
-                );
-
-        title.getStyleClass().add(
-                "card-title"
-        );
-
-        Label subtitle =
-                new Label(
-                        "Your tracked PC flipping profit over time."
-                );
-
-        subtitle.getStyleClass().add(
-                "card-text"
-        );
-
-        showAnalyticsLoading();
-
-        card.getChildren().addAll(
-                title,
-                subtitle,
-                analyticsContent
-        );
-
-        return card;
-    }
-
-    private void loadAnalytics() {
-
-        Thread.ofVirtual().start(
-                () -> {
-
-                    try {
-
-                        DashboardAnalyticsResponse analytics =
-                                authSession
-                                        .executeAuthenticated(
-                                                apiService::getDashboardAnalytics
-                                        );
-
-                        Platform.runLater(
-                                () ->
-                                        renderAnalytics(
-                                                analytics
-                                        )
-                        );
-
-                    } catch (ApiException e) {
-
-                        if (
-                                e.getStatusCode()
-                                        == 401
-                        ) {
-
-                            authSession.clear();
-
-                            Platform.runLater(
-                                    onSessionExpired
-                            );
-
-                            return;
-                        }
-
-                        Platform.runLater(
-                                this::showAnalyticsError
-                        );
-                    }
-                }
-        );
-    }
-
-    private void showAnalyticsLoading() {
-
-        Label loading =
-                new Label(
-                        "Loading analytics..."
-                );
-
-        loading.getStyleClass().add(
-                "card-text"
-        );
-
-        analyticsContent
-                .getChildren()
-                .setAll(
-                        loading
-                );
-    }
-
-    private void showAnalyticsError() {
-
-        Label error =
-                new Label(
-                        "Unable to load analytics."
-                );
-
-        error.getStyleClass().add(
-                "card-text"
-        );
-
-        analyticsContent
-                .getChildren()
-                .setAll(
-                        error
-                );
-    }
-
-    private void renderAnalytics(
-            DashboardAnalyticsResponse analytics
-    ) {
-
-        if (
-                analytics == null
-                        || analytics.profitHistory() == null
-                        || analytics.profitHistory().isEmpty()
-        ) {
-
-            VBox emptyState =
-                    createAnalyticsEmptyState();
-
-            analyticsContent
-                    .getChildren()
-                    .setAll(
-                            emptyState
-                    );
-
-            return;
-        }
-
-        LineChart<String, Number> chart =
-                createProfitChart(
-                        analytics.profitHistory()
-                );
-
-        analyticsContent
-                .getChildren()
-                .setAll(
-                        chart
-                );
-    }
-
-    private VBox createAnalyticsEmptyState() {
-
-        Label title =
-                new Label(
-                        "No profit data yet"
-                );
-
-        title.getStyleClass().add(
-                "recent-activity-title"
-        );
-
-        Label description =
-                new Label(
-                        "Your profit chart will appear once PC flipping transactions are available."
-                );
-
-        description.setWrapText(
-                true
-        );
-
-        description.getStyleClass().add(
-                "card-text"
-        );
-
-        VBox emptyState =
-                new VBox(
-                        6,
-                        title,
-                        description
-                );
-
-        emptyState.getStyleClass().add(
-                "dashboard-chart-empty"
-        );
-
-        return emptyState;
-    }
-
-    private LineChart<String, Number> createProfitChart(
-            List<DashboardProfitPointResponse> points
-    ) {
-
-        CategoryAxis xAxis =
-                new CategoryAxis();
-
-        NumberAxis yAxis =
-                new NumberAxis();
-
-        xAxis.setLabel(
-                "Date"
-        );
-
-        yAxis.setLabel(
-                "Profit (€)"
-        );
-
-        LineChart<String, Number> chart =
-                new LineChart<>(
-                        xAxis,
-                        yAxis
-                );
-
-        chart.setLegendVisible(
-                false
-        );
-
-        chart.setAnimated(
-                false
-        );
-
-        chart.setCreateSymbols(
-                true
-        );
-
-        chart.setMinHeight(
-                260
-        );
-
-        chart.setPrefHeight(
-                300
-        );
-
-        chart.getStyleClass().add(
-                "dashboard-profit-chart"
-        );
-
-        XYChart.Series<String, Number> series =
-                new XYChart.Series<>();
-
-        for (
-                DashboardProfitPointResponse point
-                : points
-        ) {
-
-            series.getData().add(
-                    new XYChart.Data<>(
-                            formatChartDate(
-                                    point.occurredAt()
-                            ),
-                            point.totalProfit()
-                    )
-            );
-        }
-
-        chart.getData().add(
-                series
-        );
-
-        return chart;
-    }
-
-    private String formatChartDate(
-            String occurredAt
-    ) {
-
-        try {
-
-            return Instant
-                    .parse(
-                            occurredAt
-                    )
-                    .atZone(
-                            ZoneId.systemDefault()
-                    )
-                    .format(
-                            chartDateFormatter
-                    );
-
-        } catch (Exception e) {
-
-            return occurredAt;
-        }
     }
 
     private Label createStatisticValue() {
@@ -860,6 +611,46 @@ public class DashboardView extends VBox {
         return card;
     }
 
+    private VBox createAnalyticsCard() {
+
+        VBox card =
+                new VBox(
+                        12
+                );
+
+        card.getStyleClass().add(
+                "card"
+        );
+
+        Label title =
+                new Label(
+                        "Profit Analytics"
+                );
+
+        title.getStyleClass().add(
+                "card-title"
+        );
+
+        Label subtitle =
+                new Label(
+                        "Your tracked PC flipping profit over time."
+                );
+
+        subtitle.getStyleClass().add(
+                "card-text"
+        );
+
+        showAnalyticsLoading();
+
+        card.getChildren().addAll(
+                title,
+                subtitle,
+                analyticsContent
+        );
+
+        return card;
+    }
+
     private void loadDashboard() {
 
         Thread.ofVirtual().start(
@@ -901,6 +692,50 @@ public class DashboardView extends VBox {
                                         showDashboardError(
                                                 e.getMessage()
                                         )
+                        );
+                    }
+                }
+        );
+    }
+
+    private void loadAnalytics() {
+
+        Thread.ofVirtual().start(
+                () -> {
+
+                    try {
+
+                        DashboardAnalyticsResponse analytics =
+                                authSession
+                                        .executeAuthenticated(
+                                                apiService::getDashboardAnalytics
+                                        );
+
+                        Platform.runLater(
+                                () ->
+                                        renderAnalytics(
+                                                analytics
+                                        )
+                        );
+
+                    } catch (ApiException e) {
+
+                        if (
+                                e.getStatusCode()
+                                        == 401
+                        ) {
+
+                            authSession.clear();
+
+                            Platform.runLater(
+                                    onSessionExpired
+                            );
+
+                            return;
+                        }
+
+                        Platform.runLater(
+                                this::showAnalyticsError
                         );
                     }
                 }
@@ -1131,6 +966,187 @@ public class DashboardView extends VBox {
         }
     }
 
+    private void showAnalyticsLoading() {
+
+        Label loading =
+                new Label(
+                        "Loading analytics..."
+                );
+
+        loading.getStyleClass().add(
+                "card-text"
+        );
+
+        analyticsContent
+                .getChildren()
+                .setAll(
+                        loading
+                );
+    }
+
+    private void showAnalyticsError() {
+
+        Label error =
+                new Label(
+                        "Unable to load analytics."
+                );
+
+        error.getStyleClass().add(
+                "card-text"
+        );
+
+        analyticsContent
+                .getChildren()
+                .setAll(
+                        error
+                );
+    }
+
+    private void renderAnalytics(
+            DashboardAnalyticsResponse analytics
+    ) {
+
+        if (
+                analytics == null
+                        || analytics.profitHistory() == null
+                        || analytics.profitHistory().isEmpty()
+        ) {
+
+            VBox emptyState =
+                    createAnalyticsEmptyState();
+
+            analyticsContent
+                    .getChildren()
+                    .setAll(
+                            emptyState
+                    );
+
+            return;
+        }
+
+        LineChart<String, Number> chart =
+                createProfitChart(
+                        analytics.profitHistory()
+                );
+
+        analyticsContent
+                .getChildren()
+                .setAll(
+                        chart
+                );
+    }
+
+    private VBox createAnalyticsEmptyState() {
+
+        Label title =
+                new Label(
+                        "No profit data yet"
+                );
+
+        title.getStyleClass().add(
+                "recent-activity-title"
+        );
+
+        Label description =
+                new Label(
+                        "Your profit chart will appear once PC flipping transactions are available."
+                );
+
+        description.setWrapText(
+                true
+        );
+
+        description.getStyleClass().add(
+                "card-text"
+        );
+
+        VBox emptyState =
+                new VBox(
+                        6,
+                        title,
+                        description
+                );
+
+        emptyState.getStyleClass().add(
+                "dashboard-chart-empty"
+        );
+
+        return emptyState;
+    }
+
+    private LineChart<String, Number> createProfitChart(
+            List<DashboardProfitPointResponse> points
+    ) {
+
+        CategoryAxis xAxis =
+                new CategoryAxis();
+
+        NumberAxis yAxis =
+                new NumberAxis();
+
+        xAxis.setLabel(
+                "Date"
+        );
+
+        yAxis.setLabel(
+                "Profit (€)"
+        );
+
+        LineChart<String, Number> chart =
+                new LineChart<>(
+                        xAxis,
+                        yAxis
+                );
+
+        chart.setLegendVisible(
+                false
+        );
+
+        chart.setAnimated(
+                false
+        );
+
+        chart.setCreateSymbols(
+                true
+        );
+
+        chart.setMinHeight(
+                260
+        );
+
+        chart.setPrefHeight(
+                300
+        );
+
+        chart.getStyleClass().add(
+                "dashboard-profit-chart"
+        );
+
+        XYChart.Series<String, Number> series =
+                new XYChart.Series<>();
+
+        for (
+                DashboardProfitPointResponse point
+                : points
+        ) {
+
+            series.getData().add(
+                    new XYChart.Data<>(
+                            formatChartDate(
+                                    point.occurredAt()
+                            ),
+                            point.totalProfit()
+                    )
+            );
+        }
+
+        chart.getData().add(
+                series
+        );
+
+        return chart;
+    }
+
     private String formatTimestamp(
             String timestamp
     ) {
@@ -1153,6 +1169,29 @@ public class DashboardView extends VBox {
         } catch (Exception e) {
 
             return timestamp;
+        }
+    }
+
+    private String formatChartDate(
+            String occurredAt
+    ) {
+
+        try {
+
+            return Instant
+                    .parse(
+                            occurredAt
+                    )
+                    .atZone(
+                            ZoneId.systemDefault()
+                    )
+                    .format(
+                            chartDateFormatter
+                    );
+
+        } catch (Exception e) {
+
+            return occurredAt;
         }
     }
 

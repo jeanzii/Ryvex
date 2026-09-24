@@ -559,3 +559,19 @@
 .dashboard-profit-chart .chart-line-symbol {
     -fx-background-color: #B44CFF, #101321;
 }
+
+/* =========================
+   DASHBOARD SCROLLING
+   ========================= */
+
+.dashboard-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.dashboard-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}

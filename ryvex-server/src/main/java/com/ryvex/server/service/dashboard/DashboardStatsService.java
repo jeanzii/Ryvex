@@ -1,7 +1,6 @@
 package com.ryvex.server.service.dashboard;
 
 import com.ryvex.server.dto.dashboard.DashboardStatsResponse;
-import com.ryvex.server.model.User;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +22,7 @@ public class DashboardStatsService {
     }
 
     public DashboardStatsResponse getStats(
-            User user
+            DashboardUserContext user
     ) {
 
         DashboardStatsContribution combined =
