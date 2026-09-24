@@ -4,24 +4,29 @@ import com.ryvex.server.dto.dashboard.DashboardResponse;
 import com.ryvex.server.dto.dashboard.DashboardStatsResponse;
 import com.ryvex.server.model.User;
 import com.ryvex.server.repository.UserRepository;
+import com.ryvex.server.service.dashboard.DashboardStatsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 public class DashboardService {
 
     private final UserRepository userRepository;
+    private final DashboardStatsService dashboardStatsService;
 
     public DashboardService(
-            UserRepository userRepository
+            UserRepository userRepository,
+            DashboardStatsService dashboardStatsService
     ) {
 
         this.userRepository =
                 userRepository;
+
+        this.dashboardStatsService =
+                dashboardStatsService;
     }
 
     public DashboardResponse getDashboard(
@@ -41,19 +46,11 @@ public class DashboardService {
                                         )
                         );
 
-        /*
-         * These values intentionally remain zero
-         * until their respective Ryvex modules
-         * are implemented.
-         */
         DashboardStatsResponse stats =
-                new DashboardStatsResponse(
-                        0,
-                        0,
-                        0,
-                        BigDecimal.ZERO
-                                .setScale(2)
-                );
+                dashboardStatsService
+                        .getStats(
+                                user
+                        );
 
         return new DashboardResponse(
                 user.getUsername(),

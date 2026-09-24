@@ -1,7 +1,9 @@
 package com.ryvex.client.view.page;
 
 import com.ryvex.client.auth.AuthSession;
-import com.ryvex.client.dto.auth.MeResponse;
+import com.ryvex.client.dto.dashboard.DashboardActivityResponse;
+import com.ryvex.client.dto.dashboard.DashboardResponse;
+import com.ryvex.client.dto.dashboard.DashboardStatsResponse;
 import com.ryvex.client.service.ApiException;
 import com.ryvex.client.service.ApiService;
 import javafx.application.Platform;
@@ -12,6 +14,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class DashboardView extends VBox {
 
@@ -24,6 +32,17 @@ public class DashboardView extends VBox {
     private final Runnable onFlipping;
     private final Runnable onFinance;
 
+    private final Label welcomeSubtitle;
+
+    private final Label pcBuildsValue;
+    private final Label marketplaceValue;
+    private final Label flipsValue;
+    private final Label profitValue;
+
+    private final Label accountStatus;
+
+    private final VBox recentActivityContent;
+
     public DashboardView(
             AuthSession authSession,
             Runnable onSessionExpired,
@@ -33,43 +52,78 @@ public class DashboardView extends VBox {
             Runnable onFinance
     ) {
 
-        this.apiService = new ApiService();
-        this.authSession = authSession;
-        this.onSessionExpired = onSessionExpired;
+        this.apiService =
+                new ApiService();
 
-        this.onPcBuilder = onPcBuilder;
-        this.onMarketplace = onMarketplace;
-        this.onFlipping = onFlipping;
-        this.onFinance = onFinance;
+        this.authSession =
+                authSession;
 
-        getStyleClass().add("content-area");
+        this.onSessionExpired =
+                onSessionExpired;
+
+        this.onPcBuilder =
+                onPcBuilder;
+
+        this.onMarketplace =
+                onMarketplace;
+
+        this.onFlipping =
+                onFlipping;
+
+        this.onFinance =
+                onFinance;
+
+        getStyleClass().add(
+                "content-area"
+        );
 
         Label title =
-                new Label("Dashboard");
+                new Label(
+                        "Dashboard"
+                );
 
         title.getStyleClass().add(
                 "page-title"
         );
 
-        Label subtitle =
+        welcomeSubtitle =
                 new Label(
-                        "Welcome back, "
-                                + authSession.getUsername()
-                                + "."
+                        "Loading your dashboard..."
                 );
 
-        subtitle.getStyleClass().add(
-                "page-subtitle"
-        );
+        welcomeSubtitle
+                .getStyleClass()
+                .add(
+                        "page-subtitle"
+                );
+
+        pcBuildsValue =
+                createStatisticValue();
+
+        marketplaceValue =
+                createStatisticValue();
+
+        flipsValue =
+                createStatisticValue();
+
+        profitValue =
+                createStatisticValue();
 
         GridPane statistics =
                 createStatisticsGrid();
 
         HBox mainRow =
-                new HBox(20);
+                new HBox(
+                        20
+                );
 
         VBox quickActions =
                 createQuickActionsCard();
+
+        recentActivityContent =
+                new VBox(
+                        8
+                );
 
         VBox recentActivity =
                 createRecentActivityCard();
@@ -98,7 +152,20 @@ public class DashboardView extends VBox {
         );
 
         HBox bottomRow =
-                new HBox(20);
+                new HBox(
+                        20
+                );
+
+        accountStatus =
+                new Label(
+                        "Loading account..."
+                );
+
+        accountStatus
+                .getStyleClass()
+                .add(
+                        "card-text"
+                );
 
         VBox accountCard =
                 createAccountCard();
@@ -131,11 +198,29 @@ public class DashboardView extends VBox {
 
         getChildren().addAll(
                 title,
-                subtitle,
+                welcomeSubtitle,
                 statistics,
                 mainRow,
                 bottomRow
         );
+
+        showRecentActivityLoading();
+
+        loadDashboard();
+    }
+
+    private Label createStatisticValue() {
+
+        Label value =
+                new Label(
+                        "—"
+                );
+
+        value.getStyleClass().add(
+                "dashboard-stat-value"
+        );
+
+        return value;
     }
 
     private GridPane createStatisticsGrid() {
@@ -143,34 +228,39 @@ public class DashboardView extends VBox {
         GridPane grid =
                 new GridPane();
 
-        grid.setHgap(20);
-        grid.setVgap(20);
+        grid.setHgap(
+                20
+        );
+
+        grid.setVgap(
+                20
+        );
 
         VBox buildsCard =
                 createStatisticCard(
                         "PC Builds",
-                        "0",
+                        pcBuildsValue,
                         "Saved configurations"
                 );
 
         VBox marketplaceCard =
                 createStatisticCard(
                         "Marketplace",
-                        "0",
+                        marketplaceValue,
                         "Active listings"
                 );
 
         VBox flipsCard =
                 createStatisticCard(
                         "PC Flips",
-                        "0",
+                        flipsValue,
                         "Active projects"
                 );
 
         VBox profitCard =
                 createStatisticCard(
                         "Total Profit",
-                        "€0.00",
+                        profitValue,
                         "Tracked flipping profit"
                 );
 
@@ -239,7 +329,7 @@ public class DashboardView extends VBox {
 
     private VBox createStatisticCard(
             String titleText,
-            String valueText,
+            Label value,
             String descriptionText
     ) {
 
@@ -252,23 +342,16 @@ public class DashboardView extends VBox {
                 "dashboard-stat-title"
         );
 
-        Label value =
-                new Label(
-                        valueText
-                );
-
-        value.getStyleClass().add(
-                "dashboard-stat-value"
-        );
-
         Label description =
                 new Label(
                         descriptionText
                 );
 
-        description.getStyleClass().add(
-                "dashboard-stat-description"
-        );
+        description
+                .getStyleClass()
+                .add(
+                        "dashboard-stat-description"
+                );
 
         VBox card =
                 new VBox(
@@ -289,7 +372,9 @@ public class DashboardView extends VBox {
     private VBox createQuickActionsCard() {
 
         VBox card =
-                new VBox(14);
+                new VBox(
+                        14
+                );
 
         card.getStyleClass().add(
                 "card"
@@ -368,7 +453,9 @@ public class DashboardView extends VBox {
     private VBox createRecentActivityCard() {
 
         VBox card =
-                new VBox(12);
+                new VBox(
+                        12
+                );
 
         card.getStyleClass().add(
                 "card"
@@ -383,44 +470,9 @@ public class DashboardView extends VBox {
                 "card-title"
         );
 
-        Label emptyTitle =
-                new Label(
-                        "No recent activity"
-                );
-
-        emptyTitle.getStyleClass().add(
-                "recent-activity-title"
-        );
-
-        Label emptyDescription =
-                new Label(
-                        "Your latest builds, listings, flips and transactions will appear here."
-                );
-
-        emptyDescription.setWrapText(
-                true
-        );
-
-        emptyDescription
-                .getStyleClass()
-                .add(
-                        "card-text"
-                );
-
-        VBox emptyState =
-                new VBox(
-                        6,
-                        emptyTitle,
-                        emptyDescription
-                );
-
-        emptyState.setAlignment(
-                Pos.CENTER_LEFT
-        );
-
         card.getChildren().addAll(
                 title,
-                emptyState
+                recentActivityContent
         );
 
         return card;
@@ -429,7 +481,9 @@ public class DashboardView extends VBox {
     private VBox createAccountCard() {
 
         VBox card =
-                new VBox(10);
+                new VBox(
+                        10
+                );
 
         card.getStyleClass().add(
                 "card"
@@ -444,64 +498,9 @@ public class DashboardView extends VBox {
                 "card-title"
         );
 
-        Label accountStatus =
-                new Label(
-                        "Verifying authenticated session..."
-                );
-
-        accountStatus.getStyleClass().add(
-                "card-text"
-        );
-
         card.getChildren().addAll(
                 title,
                 accountStatus
-        );
-
-        Thread.ofVirtual().start(
-                () -> {
-
-                    try {
-
-                        MeResponse me =
-                                authSession
-                                        .verifyCurrentUser();
-
-                        Platform.runLater(
-                                () ->
-                                        accountStatus
-                                                .setText(
-                                                        me.username()
-                                                                + " • "
-                                                                + me.role()
-                                                )
-                        );
-
-                    } catch (ApiException e) {
-
-                        if (
-                                e.getStatusCode()
-                                        == 401
-                        ) {
-
-                            authSession.clear();
-
-                            Platform.runLater(
-                                    onSessionExpired
-                            );
-
-                            return;
-                        }
-
-                        Platform.runLater(
-                                () ->
-                                        accountStatus
-                                                .setText(
-                                                        "Unable to verify account right now."
-                                                )
-                        );
-                    }
-                }
         );
 
         return card;
@@ -510,7 +509,9 @@ public class DashboardView extends VBox {
     private VBox createServiceCard() {
 
         VBox card =
-                new VBox(10);
+                new VBox(
+                        10
+                );
 
         card.getStyleClass().add(
                 "card"
@@ -544,6 +545,302 @@ public class DashboardView extends VBox {
         );
 
         return card;
+    }
+
+    private void loadDashboard() {
+
+        Thread.ofVirtual().start(
+                () -> {
+
+                    try {
+
+                        DashboardResponse dashboard =
+                                authSession
+                                        .executeAuthenticated(
+                                                apiService::getDashboard
+                                        );
+
+                        Platform.runLater(
+                                () ->
+                                        applyDashboard(
+                                                dashboard
+                                        )
+                        );
+
+                    } catch (ApiException e) {
+
+                        if (
+                                e.getStatusCode()
+                                        == 401
+                        ) {
+
+                            authSession.clear();
+
+                            Platform.runLater(
+                                    onSessionExpired
+                            );
+
+                            return;
+                        }
+
+                        Platform.runLater(
+                                () ->
+                                        showDashboardError(
+                                                e.getMessage()
+                                        )
+                        );
+                    }
+                }
+        );
+    }
+
+    private void applyDashboard(
+            DashboardResponse dashboard
+    ) {
+
+        welcomeSubtitle.setText(
+                "Welcome back, "
+                        + dashboard.username()
+                        + "."
+        );
+
+        accountStatus.setText(
+                dashboard.username()
+                        + " • "
+                        + dashboard.role()
+        );
+
+        DashboardStatsResponse stats =
+                dashboard.stats();
+
+        pcBuildsValue.setText(
+                Integer.toString(
+                        stats.pcBuilds()
+                )
+        );
+
+        marketplaceValue.setText(
+                Integer.toString(
+                        stats.marketplaceListings()
+                )
+        );
+
+        flipsValue.setText(
+                Integer.toString(
+                        stats.activeFlips()
+                )
+        );
+
+        String profit =
+                stats.totalProfit()
+                        .setScale(
+                                2,
+                                RoundingMode.HALF_UP
+                        )
+                        .toPlainString();
+
+        profitValue.setText(
+                "€" + profit
+        );
+
+        renderRecentActivity(
+                dashboard.recentActivity()
+        );
+    }
+
+    private void showDashboardError(
+            String message
+    ) {
+
+        welcomeSubtitle.setText(
+                "Unable to load your dashboard."
+        );
+
+        accountStatus.setText(
+                message
+        );
+
+        pcBuildsValue.setText(
+                "—"
+        );
+
+        marketplaceValue.setText(
+                "—"
+        );
+
+        flipsValue.setText(
+                "—"
+        );
+
+        profitValue.setText(
+                "—"
+        );
+
+        recentActivityContent
+                .getChildren()
+                .clear();
+
+        Label error =
+                new Label(
+                        "Unable to load recent activity."
+                );
+
+        error.getStyleClass().add(
+                "card-text"
+        );
+
+        recentActivityContent
+                .getChildren()
+                .add(
+                        error
+                );
+    }
+
+    private void showRecentActivityLoading() {
+
+        recentActivityContent
+                .getChildren()
+                .clear();
+
+        Label loading =
+                new Label(
+                        "Loading recent activity..."
+                );
+
+        loading.getStyleClass().add(
+                "card-text"
+        );
+
+        recentActivityContent
+                .getChildren()
+                .add(
+                        loading
+                );
+    }
+
+    private void renderRecentActivity(
+            List<DashboardActivityResponse> activities
+    ) {
+
+        recentActivityContent
+                .getChildren()
+                .clear();
+
+        if (
+                activities == null
+                        || activities.isEmpty()
+        ) {
+
+            Label emptyTitle =
+                    new Label(
+                            "No recent activity"
+                    );
+
+            emptyTitle
+                    .getStyleClass()
+                    .add(
+                            "recent-activity-title"
+                    );
+
+            Label emptyDescription =
+                    new Label(
+                            "Your latest builds, listings, flips and transactions will appear here."
+                    );
+
+            emptyDescription
+                    .setWrapText(
+                            true
+                    );
+
+            emptyDescription
+                    .getStyleClass()
+                    .add(
+                            "card-text"
+                    );
+
+            VBox emptyState =
+                    new VBox(
+                            6,
+                            emptyTitle,
+                            emptyDescription
+                    );
+
+            emptyState.setAlignment(
+                    Pos.CENTER_LEFT
+            );
+
+            recentActivityContent
+                    .getChildren()
+                    .add(
+                            emptyState
+                    );
+
+            return;
+        }
+
+        for (
+                DashboardActivityResponse activity
+                : activities
+        ) {
+
+            Label message =
+                    new Label(
+                            activity.message()
+                    );
+
+            message.getStyleClass().add(
+                    "recent-activity-title"
+            );
+
+            Label timestamp =
+                    new Label(
+                            formatTimestamp(
+                                    activity.occurredAt()
+                            )
+                    );
+
+            timestamp.getStyleClass().add(
+                    "card-text"
+            );
+
+            VBox row =
+                    new VBox(
+                            3,
+                            message,
+                            timestamp
+                    );
+
+            recentActivityContent
+                    .getChildren()
+                    .add(
+                            row
+                    );
+        }
+    }
+
+    private String formatTimestamp(
+            String timestamp
+    ) {
+
+        try {
+
+            return Instant
+                    .parse(
+                            timestamp
+                    )
+                    .atZone(
+                            ZoneId.systemDefault()
+                    )
+                    .format(
+                            DateTimeFormatter.ofPattern(
+                                    "dd MMM yyyy • HH:mm"
+                            )
+                    );
+
+        } catch (Exception e) {
+
+            return timestamp;
+        }
     }
 
     private void checkServerStatus(

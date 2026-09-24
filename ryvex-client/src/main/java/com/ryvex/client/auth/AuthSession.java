@@ -5,6 +5,7 @@ import com.ryvex.client.dto.auth.MeResponse;
 import com.ryvex.client.dto.auth.TokenResponse;
 import com.ryvex.client.service.ApiException;
 import com.ryvex.client.service.ApiService;
+import java.util.function.Function;
 
 import java.time.Instant;
 
@@ -58,43 +59,16 @@ public class AuthSession {
 
     public MeResponse verifyCurrentUser() {
 
-        try {
+        MeResponse me =
+                executeAuthenticated(
+                        apiService::getMe
+                );
 
-            String token =
-                    getValidAccessToken();
+        updateUser(
+                me
+        );
 
-            MeResponse me =
-                    apiService.getMe(
-                            token
-                    );
-
-            updateUser(me);
-
-            return me;
-
-        } catch (ApiException e) {
-
-            /*
-             * The server can reject a token before our local
-             * expiry calculation expects it to.
-             *
-             * In that situation, attempt one refresh.
-             */
-            if (e.getStatusCode() != 401) {
-                throw e;
-            }
-
-            refreshTokens();
-
-            MeResponse me =
-                    apiService.getMe(
-                            getAccessTokenSnapshot()
-                    );
-
-            updateUser(me);
-
-            return me;
-        }
+        return me;
     }
 
     public synchronized String getValidAccessToken() {
@@ -245,6 +219,47 @@ public class AuthSession {
              * force a token refresh on the next request.
              */
             return Instant.EPOCH;
+        }
+    }
+
+    public <T> T executeAuthenticated(
+            Function<String, T> request
+    ) {
+
+        /*
+         * getValidAccessToken() automatically refreshes
+         * the token when its known expiry is approaching.
+         */
+        String token =
+                getValidAccessToken();
+
+        try {
+
+            return request.apply(
+                    token
+            );
+
+        } catch (ApiException e) {
+
+            /*
+             * The backend may reject a token even if our
+             * local expiry calculation believed it was valid.
+             *
+             * In that case, refresh once and retry.
+             */
+            if (
+                    e.getStatusCode()
+                            != 401
+            ) {
+
+                throw e;
+            }
+
+            refreshTokens();
+
+            return request.apply(
+                    getAccessTokenSnapshot()
+            );
         }
     }
 }

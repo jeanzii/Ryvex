@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import com.ryvex.client.dto.dashboard.DashboardResponse;
 
 public class ApiService {
 
@@ -109,6 +110,35 @@ public class ApiService {
                 request,
                 200,
                 MeResponse.class
+        );
+    }
+
+    public DashboardResponse getDashboard(
+            String accessToken
+    ) {
+
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        BASE_URL + "/api/dashboard"
+                                )
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .header(
+                                "Accept",
+                                "application/json"
+                        )
+                        .GET()
+                        .build();
+
+        return sendForJson(
+                request,
+                200,
+                DashboardResponse.class
         );
     }
 

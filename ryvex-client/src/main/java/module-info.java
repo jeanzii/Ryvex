@@ -8,4 +8,7 @@ module com.ryvex.client {
 
     opens com.ryvex.client.dto.auth
             to tools.jackson.databind;
+
+    opens com.ryvex.client.dto.dashboard
+            to tools.jackson.databind;
 }
