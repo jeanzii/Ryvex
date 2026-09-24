@@ -119,3 +119,141 @@
 .status-offline {
     -fx-text-fill: #FF6B81;
 }
+
+/* =========================
+   AUTHENTICATION
+   ========================= */
+
+.auth-root {
+    -fx-background-color: #090B14;
+}
+
+.auth-brand-panel {
+    -fx-background-color: #0D0F1A;
+    -fx-padding: 70px;
+    -fx-border-color: transparent #29263A transparent transparent;
+    -fx-border-width: 0 1px 0 0;
+}
+
+.auth-brand {
+    -fx-text-fill: #F5F3FF;
+    -fx-font-size: 42px;
+    -fx-font-weight: bold;
+}
+
+.brand-tagline {
+    -fx-text-fill: #B44CFF;
+    -fx-font-size: 23px;
+    -fx-font-weight: bold;
+}
+
+.brand-copy {
+    -fx-text-fill: #A7A3B8;
+    -fx-font-size: 15px;
+    -fx-line-spacing: 4px;
+}
+
+.auth-form-panel {
+    -fx-background-color: #090B14;
+    -fx-padding: 50px;
+    -fx-alignment: center;
+}
+
+.auth-card {
+    -fx-background-color: #101321;
+    -fx-padding: 36px;
+
+    -fx-background-radius: 16px;
+
+    -fx-border-color: #29263A;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+}
+
+.auth-title {
+    -fx-text-fill: #F5F3FF;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.auth-subtitle {
+    -fx-text-fill: #A7A3B8;
+    -fx-font-size: 14px;
+}
+
+.field-label {
+    -fx-text-fill: #D6D2E2;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.auth-field {
+    -fx-background-color: #171A2B;
+
+    -fx-text-fill: #F5F3FF;
+    -fx-prompt-text-fill: #6F6A7E;
+
+    -fx-border-color: #29263A;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+
+    -fx-background-radius: 8px;
+
+    -fx-padding: 12px 14px;
+
+    -fx-font-size: 14px;
+}
+
+.auth-field:focused {
+    -fx-border-color: #9D4EDD;
+}
+
+.primary-button {
+    -fx-background-color: #9D4EDD;
+    -fx-text-fill: #FFFFFF;
+
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+
+    -fx-padding: 12px 18px;
+
+    -fx-background-radius: 8px;
+
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #B44CFF;
+}
+
+.link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #B44CFF;
+
+    -fx-padding: 4px;
+
+    -fx-font-weight: bold;
+
+    -fx-cursor: hand;
+}
+
+.link-button:hover {
+    -fx-text-fill: #C65CFF;
+}
+
+.auth-switch-text {
+    -fx-text-fill: #A7A3B8;
+}
+
+.auth-status {
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+
+.auth-status-error {
+    -fx-text-fill: #FF6B81;
+}
+
+.auth-status-success {
+    -fx-text-fill: #B44CFF;
+}
