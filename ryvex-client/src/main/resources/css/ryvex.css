@@ -394,3 +394,128 @@
 .button {
     -fx-focus-traversable: true;
 }
+
+/* =========================
+   CUSTOM WINDOW CHROME
+   ========================= */
+
+.window-root {
+    -fx-background-color: #090B14;
+}
+
+/*
+ * Normal restored window.
+ */
+.window-rounded {
+    -fx-background-radius: 16px;
+
+    -fx-border-radius: 16px;
+    -fx-border-color: #29263A;
+    -fx-border-width: 1px;
+}
+
+/*
+ * Maximized/fullscreen windows should meet
+ * the edges of the display normally.
+ */
+.window-maximized {
+    -fx-background-radius: 0;
+
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+}
+
+
+/* =========================
+   TITLE BAR
+   ========================= */
+
+.custom-title-bar {
+    -fx-background-color: #0D0F1A;
+
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+
+    -fx-padding: 0 14px;
+
+    -fx-border-color:
+            transparent
+            transparent
+            #29263A
+            transparent;
+
+    -fx-border-width:
+            0 0 1px 0;
+}
+
+.custom-title-text {
+    -fx-text-fill: #A7A3B8;
+
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+
+/* =========================
+   WINDOW CONTROLS
+   ========================= */
+
+.window-controls {
+    -fx-padding:
+            0
+            2px
+            0
+            12px;
+}
+
+.window-control-button {
+    -fx-min-width: 14px;
+    -fx-pref-width: 14px;
+    -fx-max-width: 14px;
+
+    -fx-min-height: 14px;
+    -fx-pref-height: 14px;
+    -fx-max-height: 14px;
+
+    -fx-padding: 0;
+
+    -fx-background-radius: 100%;
+
+    -fx-border-radius: 100%;
+
+    -fx-cursor: hand;
+}
+
+
+/* Yellow — Minimize */
+
+.window-minimize-button {
+    -fx-background-color: #FFBD44;
+}
+
+.window-minimize-button:hover {
+    -fx-background-color: #FFD066;
+}
+
+
+/* Green — Maximize */
+
+.window-maximize-button {
+    -fx-background-color: #00CA4E;
+}
+
+.window-maximize-button:hover {
+    -fx-background-color: #38DD73;
+}
+
+
+/* Red — Close */
+
+.window-close-button {
+    -fx-background-color: #FF605C;
+}
+
+.window-close-button:hover {
+    -fx-background-color: #FF7B78;
+}
