@@ -1,0 +1,290 @@
+package com.ryvex.client.view;
+
+import com.ryvex.client.view.page.DashboardView;
+import com.ryvex.client.view.page.PlaceholderView;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainView extends BorderPane {
+
+    private final List<Button> navigationButtons =
+            new ArrayList<>();
+
+    public MainView() {
+
+        VBox sidebar = createSidebar();
+
+        setLeft(sidebar);
+
+        showDashboard();
+    }
+
+    private VBox createSidebar() {
+
+        VBox sidebar = new VBox();
+
+        sidebar.getStyleClass().add("sidebar");
+        sidebar.setPrefWidth(240);
+
+        Label brand = new Label("RYVEX");
+
+        brand.getStyleClass().add(
+                "brand-name"
+        );
+
+        VBox.setMargin(
+                brand,
+                new Insets(
+                        0,
+                        0,
+                        28,
+                        12
+                )
+        );
+
+        Button dashboardButton =
+                createSidebarButton(
+                        "Dashboard"
+                );
+
+        Button pcBuilderButton =
+                createSidebarButton(
+                        "PC Builder"
+                );
+
+        Button marketplaceButton =
+                createSidebarButton(
+                        "Marketplace"
+                );
+
+        Button flippingButton =
+                createSidebarButton(
+                        "PC Flipping"
+                );
+
+        Button financeButton =
+                createSidebarButton(
+                        "Finance"
+                );
+
+        Region spacer = new Region();
+
+        VBox.setVgrow(
+                spacer,
+                Priority.ALWAYS
+        );
+
+        Button settingsButton =
+                createSidebarButton(
+                        "Settings"
+                );
+
+        Button profileButton =
+                createSidebarButton(
+                        "Profile"
+                );
+
+        dashboardButton.setOnAction(
+                event -> {
+
+                    showDashboard();
+
+                    setActiveButton(
+                            dashboardButton
+                    );
+                }
+        );
+
+        pcBuilderButton.setOnAction(
+                event -> {
+
+                    showPage(
+                            new PlaceholderView(
+                                    "PC Builder",
+                                    "Plan, configure and manage custom PC builds."
+                            )
+                    );
+
+                    setActiveButton(
+                            pcBuilderButton
+                    );
+                }
+        );
+
+        marketplaceButton.setOnAction(
+                event -> {
+
+                    showPage(
+                            new PlaceholderView(
+                                    "Marketplace",
+                                    "Browse and manage PC hardware listings."
+                            )
+                    );
+
+                    setActiveButton(
+                            marketplaceButton
+                    );
+                }
+        );
+
+        flippingButton.setOnAction(
+                event -> {
+
+                    showPage(
+                            new PlaceholderView(
+                                    "PC Flipping",
+                                    "Track PC purchases, upgrades, costs and resale profits."
+                            )
+                    );
+
+                    setActiveButton(
+                            flippingButton
+                    );
+                }
+        );
+
+        financeButton.setOnAction(
+                event -> {
+
+                    showPage(
+                            new PlaceholderView(
+                                    "Finance",
+                                    "Track Ryvex transactions, spending and profit."
+                            )
+                    );
+
+                    setActiveButton(
+                            financeButton
+                    );
+                }
+        );
+
+        settingsButton.setOnAction(
+                event -> {
+
+                    showPage(
+                            new PlaceholderView(
+                                    "Settings",
+                                    "Configure your Ryvex application preferences."
+                            )
+                    );
+
+                    setActiveButton(
+                            settingsButton
+                    );
+                }
+        );
+
+        profileButton.setOnAction(
+                event -> {
+
+                    showPage(
+                            new PlaceholderView(
+                                    "Profile",
+                                    "Manage your Ryvex account and profile."
+                            )
+                    );
+
+                    setActiveButton(
+                            profileButton
+                    );
+                }
+        );
+
+        sidebar.getChildren().addAll(
+                brand,
+
+                dashboardButton,
+                pcBuilderButton,
+                marketplaceButton,
+                flippingButton,
+                financeButton,
+
+                spacer,
+
+                settingsButton,
+                profileButton
+        );
+
+        setActiveButton(
+                dashboardButton
+        );
+
+        return sidebar;
+    }
+
+    private Button createSidebarButton(
+            String text
+    ) {
+
+        Button button =
+                new Button(text);
+
+        button.setMaxWidth(
+                Double.MAX_VALUE
+        );
+
+        button.getStyleClass().add(
+                "sidebar-button"
+        );
+
+        navigationButtons.add(
+                button
+        );
+
+        return button;
+    }
+
+    private void showDashboard() {
+
+        showPage(
+                new DashboardView()
+        );
+    }
+
+    private void showPage(
+            Node page
+    ) {
+
+        setCenter(page);
+    }
+
+    private void setActiveButton(
+            Button activeButton
+    ) {
+
+        for (
+                Button button
+                : navigationButtons
+        ) {
+
+            button.getStyleClass().remove(
+                    "sidebar-button-active"
+            );
+        }
+
+        if (
+                !activeButton
+                        .getStyleClass()
+                        .contains(
+                                "sidebar-button-active"
+                        )
+        ) {
+
+            activeButton
+                    .getStyleClass()
+                    .add(
+                            "sidebar-button-active"
+                    );
+        }
+    }
+}
