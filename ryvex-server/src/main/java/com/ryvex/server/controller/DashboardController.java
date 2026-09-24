@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ryvex.server.dto.dashboard.DashboardAnalyticsResponse;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -28,6 +29,16 @@ public class DashboardController {
     ) {
 
         return dashboardService.getDashboard(
+                jwt.getSubject()
+        );
+    }
+
+    @GetMapping("/analytics")
+    public DashboardAnalyticsResponse getAnalytics(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+
+        return dashboardService.getAnalytics(
                 jwt.getSubject()
         );
     }

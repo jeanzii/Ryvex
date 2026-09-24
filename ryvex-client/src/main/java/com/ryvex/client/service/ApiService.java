@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import com.ryvex.client.dto.dashboard.DashboardResponse;
+import com.ryvex.client.dto.dashboard.DashboardAnalyticsResponse;
 
 public class ApiService {
 
@@ -408,5 +409,35 @@ public class ApiService {
             default ->
                     "Ryvex could not complete the request.";
         };
+    }
+
+    public DashboardAnalyticsResponse getDashboardAnalytics(
+            String accessToken
+    ) {
+
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(
+                                URI.create(
+                                        BASE_URL
+                                                + "/api/dashboard/analytics"
+                                )
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .header(
+                                "Accept",
+                                "application/json"
+                        )
+                        .GET()
+                        .build();
+
+        return sendForJson(
+                request,
+                200,
+                DashboardAnalyticsResponse.class
+        );
     }
 }

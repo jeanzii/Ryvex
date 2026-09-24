@@ -519,3 +519,43 @@
 .window-close-button:hover {
     -fx-background-color: #FF7B78;
 }
+
+/* =========================
+   DASHBOARD ANALYTICS
+   ========================= */
+
+.dashboard-chart-empty {
+    -fx-padding: 28px 4px;
+}
+
+.dashboard-profit-chart {
+    -fx-background-color: transparent;
+}
+
+.dashboard-profit-chart .chart-plot-background {
+    -fx-background-color: #0D0F1A;
+    -fx-background-radius: 10px;
+}
+
+.dashboard-profit-chart .chart-vertical-grid-lines,
+.dashboard-profit-chart .chart-horizontal-grid-lines {
+    -fx-stroke: #29263A;
+    -fx-stroke-dash-array: 2 6;
+}
+
+.dashboard-profit-chart .axis {
+    -fx-tick-label-fill: #A7A3B8;
+}
+
+.dashboard-profit-chart .axis-label {
+    -fx-text-fill: #A7A3B8;
+}
+
+.dashboard-profit-chart .chart-series-line {
+    -fx-stroke: #B44CFF;
+    -fx-stroke-width: 2px;
+}
+
+.dashboard-profit-chart .chart-line-symbol {
+    -fx-background-color: #B44CFF, #101321;
+}
