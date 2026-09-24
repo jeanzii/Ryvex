@@ -11,12 +11,17 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import com.ryvex.client.auth.AuthSession;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+
+import java.util.Objects;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainView extends BorderPane {
-    
+
     private final AuthSession authSession;
     private final Runnable onLogout;
 
@@ -48,10 +53,43 @@ public class MainView extends BorderPane {
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(240);
 
-        Label brand = new Label("RYVEX");
+        Image logoImage =
+                new Image(
+                        Objects.requireNonNull(
+                                getClass().getResourceAsStream(
+                                        "/images/ryvex-sidebar-logo.png"
+                                )
+                        )
+                );
+
+        ImageView logo =
+                new ImageView(
+                        logoImage
+                );
+
+        logo.setPreserveRatio(
+                true
+        );
+
+        logo.setFitWidth(
+                195
+        );
+
+        HBox brand =
+                new HBox(
+                        logo
+                );
+
+        brand.setAlignment(
+                javafx.geometry.Pos.CENTER
+        );
+
+        brand.setMaxWidth(
+                Double.MAX_VALUE
+        );
 
         brand.getStyleClass().add(
-                "brand-name"
+                "sidebar-brand"
         );
 
         VBox.setMargin(
@@ -60,7 +98,7 @@ public class MainView extends BorderPane {
                         0,
                         0,
                         28,
-                        12
+                        0
                 )
         );
 
@@ -310,7 +348,39 @@ public class MainView extends BorderPane {
         showPage(
                 new DashboardView(
                         authSession,
-                        onLogout
+                        onLogout,
+
+                        () ->
+                                showPage(
+                                        new PlaceholderView(
+                                                "PC Builder",
+                                                "Plan, configure and manage custom PC builds."
+                                        )
+                                ),
+
+                        () ->
+                                showPage(
+                                        new PlaceholderView(
+                                                "Marketplace",
+                                                "Browse and manage PC hardware listings."
+                                        )
+                                ),
+
+                        () ->
+                                showPage(
+                                        new PlaceholderView(
+                                                "PC Flipping",
+                                                "Track PC purchases, upgrades, costs and resale profits."
+                                        )
+                                ),
+
+                        () ->
+                                showPage(
+                                        new PlaceholderView(
+                                                "Finance",
+                                                "Track Ryvex transactions, spending and profit."
+                                        )
+                                )
                 )
         );
     }

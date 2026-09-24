@@ -15,6 +15,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import com.ryvex.client.auth.AuthSession;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+import java.util.Objects;
 
 public class AuthView extends BorderPane {
 
@@ -68,11 +72,26 @@ public class AuthView extends BorderPane {
 
     private VBox createBrandingPanel() {
 
-        Label brand =
-                new Label("RYVEX");
+        Image logoImage =
+                new Image(
+                        Objects.requireNonNull(
+                                getClass().getResourceAsStream(
+                                        "/images/ryvex-sidebar-logo.png"
+                                )
+                        )
+                );
 
-        brand.getStyleClass().add(
-                "auth-brand"
+        ImageView logo =
+                new ImageView(
+                        logoImage
+                );
+
+        logo.setPreserveRatio(
+                true
+        );
+
+        logo.setFitHeight(
+                64
         );
 
         Label tagline =
@@ -101,7 +120,7 @@ public class AuthView extends BorderPane {
         VBox branding =
                 new VBox(
                         18,
-                        brand,
+                        logo,
                         tagline,
                         description
                 );

@@ -7,6 +7,7 @@ import com.ryvex.client.view.auth.AuthView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -47,6 +48,19 @@ public class RyvexApplication extends Application {
                                 "/css/ryvex.css"
                         )
                 ).toExternalForm()
+        );
+
+        Image appIcon =
+                new Image(
+                        Objects.requireNonNull(
+                                getClass().getResourceAsStream(
+                                        "/images/app-icon.png"
+                                )
+                        )
+                );
+
+        stage.getIcons().add(
+                appIcon
         );
 
         stage.setTitle(

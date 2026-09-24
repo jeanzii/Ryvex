@@ -279,3 +279,118 @@
     -fx-background-color: rgba(255, 107, 129, 0.10);
     -fx-text-fill: #FF8A9B;
 }
+
+/* =========================
+   DASHBOARD
+   ========================= */
+
+.dashboard-stat-card {
+    -fx-min-height: 125px;
+}
+
+.dashboard-stat-title {
+    -fx-text-fill: #A7A3B8;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-stat-value {
+    -fx-text-fill: #F5F3FF;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-stat-description {
+    -fx-text-fill: #6F6A7E;
+    -fx-font-size: 12px;
+}
+
+.dashboard-action-button {
+    -fx-background-color: #171A2B;
+    -fx-text-fill: #F5F3FF;
+
+    -fx-border-color: #29263A;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+
+    -fx-background-radius: 8px;
+
+    -fx-alignment: CENTER_LEFT;
+
+    -fx-padding: 12px 14px;
+
+    -fx-font-size: 13px;
+
+    -fx-cursor: hand;
+}
+
+.dashboard-action-button:hover {
+    -fx-background-color: rgba(157, 78, 221, 0.18);
+    -fx-border-color: #9D4EDD;
+    -fx-text-fill: #B44CFF;
+}
+
+.recent-activity-title {
+    -fx-text-fill: #F5F3FF;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* =========================
+   BRANDING / FINAL POLISH
+   ========================= */
+
+.sidebar-brand {
+    -fx-alignment: center;
+}
+
+.sidebar {
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0, 0, 0, 0.28),
+            18,
+            0.10,
+            4,
+            0
+    );
+}
+
+.card {
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0, 0, 0, 0.18),
+            14,
+            0.08,
+            0,
+            4
+    );
+}
+
+.auth-card {
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0, 0, 0, 0.32),
+            26,
+            0.12,
+            0,
+            8
+    );
+}
+
+.primary-button:pressed {
+    -fx-background-color: #8938C7;
+}
+
+.sidebar-button:pressed {
+    -fx-background-color: rgba(157, 78, 221, 0.28);
+}
+
+.dashboard-action-button:pressed {
+    -fx-background-color: rgba(157, 78, 221, 0.28);
+}
+
+.text-field,
+.password-field,
+.button {
+    -fx-focus-traversable: true;
+}
