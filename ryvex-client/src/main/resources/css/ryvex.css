@@ -257,3 +257,25 @@
 .auth-status-success {
     -fx-text-fill: #B44CFF;
 }
+
+.sidebar-user-label {
+    -fx-text-fill: #6F6A7E;
+    -fx-font-size: 11px;
+    -fx-padding: 8px 12px 0 12px;
+}
+
+.sidebar-username {
+    -fx-text-fill: #F5F3FF;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 12px 8px 12px;
+}
+
+.logout-button {
+    -fx-text-fill: #FF6B81;
+}
+
+.logout-button:hover {
+    -fx-background-color: rgba(255, 107, 129, 0.10);
+    -fx-text-fill: #FF8A9B;
+}

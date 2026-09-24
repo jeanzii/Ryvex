@@ -10,16 +10,29 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import com.ryvex.client.auth.AuthSession;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainView extends BorderPane {
+    
+    private final AuthSession authSession;
+    private final Runnable onLogout;
 
     private final List<Button> navigationButtons =
             new ArrayList<>();
 
-    public MainView() {
+    public MainView(
+            AuthSession authSession,
+            Runnable onLogout
+    ) {
+
+        this.authSession =
+                authSession;
+
+        this.onLogout =
+                onLogout;
 
         VBox sidebar = createSidebar();
 
@@ -92,6 +105,50 @@ public class MainView extends BorderPane {
                 createSidebarButton(
                         "Profile"
                 );
+
+        Label signedInLabel =
+                new Label(
+                        "Signed in as"
+                );
+
+        signedInLabel
+                .getStyleClass()
+                .add(
+                        "sidebar-user-label"
+                );
+
+        Label usernameLabel =
+                new Label(
+                        authSession.getUsername()
+                );
+
+        usernameLabel
+                .getStyleClass()
+                .add(
+                        "sidebar-username"
+                );
+
+        Button logoutButton =
+                new Button(
+                        "Log Out"
+                );
+
+        logoutButton
+                .setMaxWidth(
+                        Double.MAX_VALUE
+                );
+
+        logoutButton
+                .getStyleClass()
+                .addAll(
+                        "sidebar-button",
+                        "logout-button"
+                );
+
+        logoutButton.setOnAction(
+                event ->
+                        onLogout.run()
+        );
 
         dashboardButton.setOnAction(
                 event -> {
@@ -211,8 +268,12 @@ public class MainView extends BorderPane {
 
                 spacer,
 
+                signedInLabel,
+                usernameLabel,
+
                 settingsButton,
-                profileButton
+                profileButton,
+                logoutButton
         );
 
         setActiveButton(
@@ -247,7 +308,10 @@ public class MainView extends BorderPane {
     private void showDashboard() {
 
         showPage(
-                new DashboardView()
+                new DashboardView(
+                        authSession,
+                        onLogout
+                )
         );
     }
 

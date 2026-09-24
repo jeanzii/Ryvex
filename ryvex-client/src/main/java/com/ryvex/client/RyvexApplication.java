@@ -1,8 +1,11 @@
 package com.ryvex.client;
 
+import com.ryvex.client.auth.AuthSession;
+import com.ryvex.client.service.ApiService;
 import com.ryvex.client.view.MainView;
 import com.ryvex.client.view.auth.AuthView;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -11,10 +14,24 @@ import java.util.Objects;
 
 public class RyvexApplication extends Application {
 
-    @Override
-    public void start(Stage stage) {
+    private final ApiService apiService =
+            new ApiService();
 
-        StackPane applicationRoot =
+    private AuthSession authSession;
+
+    private StackPane applicationRoot;
+
+    @Override
+    public void start(
+            Stage stage
+    ) {
+
+        authSession =
+                new AuthSession(
+                        apiService
+                );
+
+        applicationRoot =
                 new StackPane();
 
         Scene scene =
@@ -22,27 +39,6 @@ public class RyvexApplication extends Application {
                         applicationRoot,
                         1280,
                         800
-                );
-
-        AuthView authView =
-                new AuthView(
-                        loginResponse -> {
-
-                            MainView mainView =
-                                    new MainView();
-
-                            applicationRoot
-                                    .getChildren()
-                                    .setAll(
-                                            mainView
-                                    );
-                        }
-                );
-
-        applicationRoot
-                .getChildren()
-                .add(
-                        authView
                 );
 
         scene.getStylesheets().add(
@@ -69,7 +65,68 @@ public class RyvexApplication extends Application {
                 scene
         );
 
+        showAuthentication();
+
         stage.show();
+    }
+
+    private void showAuthentication() {
+
+        AuthView authView =
+                new AuthView(
+                        apiService,
+                        authSession,
+                        this::showMainApplication
+                );
+
+        applicationRoot
+                .getChildren()
+                .setAll(
+                        authView
+                );
+    }
+
+    private void showMainApplication() {
+
+        if (
+                !authSession
+                        .isAuthenticated()
+        ) {
+
+            showAuthentication();
+            return;
+        }
+
+        MainView mainView =
+                new MainView(
+                        authSession,
+                        this::logout
+                );
+
+        applicationRoot
+                .getChildren()
+                .setAll(
+                        mainView
+                );
+    }
+
+    private void logout() {
+
+        Thread.ofVirtual().start(
+                () -> {
+
+                    try {
+
+                        authSession.logout();
+
+                    } finally {
+
+                        Platform.runLater(
+                                this::showAuthentication
+                        );
+                    }
+                }
+        );
     }
 
     public static void main(

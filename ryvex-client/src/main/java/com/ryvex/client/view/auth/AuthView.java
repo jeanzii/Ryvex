@@ -14,22 +14,27 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
-import java.util.function.Consumer;
+import com.ryvex.client.auth.AuthSession;
 
 public class AuthView extends BorderPane {
 
     private final StackPane formContainer;
 
-    private final ApiService apiService =
-            new ApiService();
-
-    private final Consumer<LoginResponse>
-            onLoginSuccess;
+    private final ApiService apiService;
+    private final AuthSession authSession;
+    private final Runnable onLoginSuccess;
 
     public AuthView(
-            Consumer<LoginResponse> onLoginSuccess
+            ApiService apiService,
+            AuthSession authSession,
+            Runnable onLoginSuccess
     ) {
+
+        this.apiService =
+                apiService;
+
+        this.authSession =
+                authSession;
 
         this.onLoginSuccess =
                 onLoginSuccess;
@@ -283,17 +288,26 @@ public class AuthView extends BorderPane {
                                                     password
                                             );
 
+                                    authSession.start(
+                                            response
+                                    );
+
+                                    /*
+                                     * This calls the protected /api/auth/me endpoint.
+                                     * The dashboard is only opened after the JWT
+                                     * has actually been accepted by the backend.
+                                     */
+                                    authSession.verifyCurrentUser();
+
                                     Platform.runLater(
-                                            () ->
-                                                    onLoginSuccess
-                                                            .accept(
-                                                                    response
-                                                            )
+                                            onLoginSuccess
                                     );
 
                                 } catch (
                                         ApiException e
                                 ) {
+
+                                    authSession.clear();
 
                                     Platform.runLater(
                                             () -> {
