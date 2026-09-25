@@ -12,4 +12,6 @@ public interface HardwareComponentRepository
     List<HardwareComponent> findAllByCategoryOrderByBrandAscModelAsc(
             ComponentCategory category
     );
+
+    List<HardwareComponent> findAllByOrderByCategoryAscBrandAscModelAsc();
 }
