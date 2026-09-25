@@ -575,3 +575,31 @@
 .dashboard-scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
+
+/* =========================
+   DASHBOARD ERROR / RETRY
+   ========================= */
+
+.dashboard-retry-button {
+    -fx-background-color: #171A2B;
+    -fx-text-fill: #F5F3FF;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 14px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: #29263A;
+    -fx-cursor: hand;
+}
+
+.dashboard-retry-button:hover {
+    -fx-background-color: #9D4EDD;
+    -fx-border-color: #B44CFF;
+}
+
+.dashboard-retry-button:pressed {
+    -fx-background-color: #8938C7;
+}
+
+.dashboard-retry-button:disabled {
+    -fx-opacity: 0.55;
+}

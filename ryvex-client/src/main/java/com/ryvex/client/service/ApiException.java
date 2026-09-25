@@ -8,11 +8,15 @@ public class ApiException extends RuntimeException {
             int statusCode,
             String message
     ) {
+
         super(message);
-        this.statusCode = statusCode;
+
+        this.statusCode =
+                statusCode;
     }
 
     public int getStatusCode() {
+
         return statusCode;
     }
 }

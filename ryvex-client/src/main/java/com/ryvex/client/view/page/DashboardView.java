@@ -1,11 +1,7 @@
 package com.ryvex.client.view.page;
 
 import com.ryvex.client.auth.AuthSession;
-import com.ryvex.client.dto.dashboard.DashboardActivityResponse;
-import com.ryvex.client.dto.dashboard.DashboardAnalyticsResponse;
-import com.ryvex.client.dto.dashboard.DashboardProfitPointResponse;
-import com.ryvex.client.dto.dashboard.DashboardResponse;
-import com.ryvex.client.dto.dashboard.DashboardStatsResponse;
+import com.ryvex.client.dto.dashboard.*;
 import com.ryvex.client.service.ApiException;
 import com.ryvex.client.service.ApiService;
 import javafx.application.Platform;
@@ -16,12 +12,8 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.*;
 
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -51,6 +43,9 @@ public class DashboardView extends VBox {
 
     private final VBox recentActivityContent;
     private final StackPane analyticsContent;
+
+    private final Button dashboardRetryButton;
+    private final Button analyticsRetryButton;
 
     private final DateTimeFormatter chartDateFormatter =
             DateTimeFormatter.ofPattern(
@@ -125,6 +120,18 @@ public class DashboardView extends VBox {
 
         profitValue =
                 createStatisticValue();
+
+        dashboardRetryButton =
+                createRetryButton(
+                        "Retry Dashboard",
+                        this::retryDashboard
+                );
+
+        analyticsRetryButton =
+                createRetryButton(
+                        "Retry Analytics",
+                        this::retryAnalytics
+                );
 
         GridPane statistics =
                 createStatisticsGrid();
@@ -267,10 +274,33 @@ public class DashboardView extends VBox {
                 Priority.ALWAYS
         );
 
-        showRecentActivityLoading();
+        showDashboardLoading();
+        showAnalyticsLoading();
 
         loadDashboard();
         loadAnalytics();
+    }
+
+    private Button createRetryButton(
+            String text,
+            Runnable action
+    ) {
+
+        Button button =
+                new Button(
+                        text
+                );
+
+        button.getStyleClass().add(
+                "dashboard-retry-button"
+        );
+
+        button.setOnAction(
+                event ->
+                        action.run()
+        );
+
+        return button;
     }
 
     private Label createStatisticValue() {
@@ -640,8 +670,6 @@ public class DashboardView extends VBox {
                 "card-text"
         );
 
-        showAnalyticsLoading();
-
         card.getChildren().addAll(
                 title,
                 subtitle,
@@ -651,7 +679,44 @@ public class DashboardView extends VBox {
         return card;
     }
 
+    private void showDashboardLoading() {
+
+        welcomeSubtitle.setText(
+                "Loading your dashboard..."
+        );
+
+        pcBuildsValue.setText(
+                "—"
+        );
+
+        marketplaceValue.setText(
+                "—"
+        );
+
+        flipsValue.setText(
+                "—"
+        );
+
+        profitValue.setText(
+                "—"
+        );
+
+        accountStatus.setText(
+                "Loading account..."
+        );
+
+        dashboardRetryButton.setDisable(
+                true
+        );
+
+        showRecentActivityLoading();
+    }
+
     private void loadDashboard() {
+
+        dashboardRetryButton.setDisable(
+                true
+        );
 
         Thread.ofVirtual().start(
                 () -> {
@@ -665,10 +730,16 @@ public class DashboardView extends VBox {
                                         );
 
                         Platform.runLater(
-                                () ->
-                                        applyDashboard(
-                                                dashboard
-                                        )
+                                () -> {
+
+                                    applyDashboard(
+                                            dashboard
+                                    );
+
+                                    dashboardRetryButton.setDisable(
+                                            false
+                                    );
+                                }
                         );
 
                     } catch (ApiException e) {
@@ -678,11 +749,7 @@ public class DashboardView extends VBox {
                                         == 401
                         ) {
 
-                            authSession.clear();
-
-                            Platform.runLater(
-                                    onSessionExpired
-                            );
+                            handleSessionExpired();
 
                             return;
                         }
@@ -690,7 +757,18 @@ public class DashboardView extends VBox {
                         Platform.runLater(
                                 () ->
                                         showDashboardError(
-                                                e.getMessage()
+                                                friendlyErrorMessage(
+                                                        e
+                                                )
+                                        )
+                        );
+
+                    } catch (Exception e) {
+
+                        Platform.runLater(
+                                () ->
+                                        showDashboardError(
+                                                "Ryvex could not reach the server."
                                         )
                         );
                     }
@@ -699,6 +777,10 @@ public class DashboardView extends VBox {
     }
 
     private void loadAnalytics() {
+
+        analyticsRetryButton.setDisable(
+                true
+        );
 
         Thread.ofVirtual().start(
                 () -> {
@@ -712,10 +794,16 @@ public class DashboardView extends VBox {
                                         );
 
                         Platform.runLater(
-                                () ->
-                                        renderAnalytics(
-                                                analytics
-                                        )
+                                () -> {
+
+                                    renderAnalytics(
+                                            analytics
+                                    );
+
+                                    analyticsRetryButton.setDisable(
+                                            false
+                                    );
+                                }
                         );
 
                     } catch (ApiException e) {
@@ -725,17 +813,27 @@ public class DashboardView extends VBox {
                                         == 401
                         ) {
 
-                            authSession.clear();
-
-                            Platform.runLater(
-                                    onSessionExpired
-                            );
+                            handleSessionExpired();
 
                             return;
                         }
 
                         Platform.runLater(
-                                this::showAnalyticsError
+                                () ->
+                                        showAnalyticsError(
+                                                friendlyErrorMessage(
+                                                        e
+                                                )
+                                        )
+                        );
+
+                    } catch (Exception e) {
+
+                        Platform.runLater(
+                                () ->
+                                        showAnalyticsError(
+                                                "Ryvex could not reach the server."
+                                        )
                         );
                     }
                 }
@@ -824,24 +922,55 @@ public class DashboardView extends VBox {
                 "—"
         );
 
-        recentActivityContent
-                .getChildren()
-                .clear();
-
-        Label error =
-                new Label(
-                        "Unable to load recent activity."
-                );
-
-        error.getStyleClass().add(
-                "card-text"
+        dashboardRetryButton.setDisable(
+                false
         );
 
         recentActivityContent
                 .getChildren()
-                .add(
-                        error
+                .clear();
+
+        Label errorTitle =
+                new Label(
+                        "Dashboard unavailable"
                 );
+
+        errorTitle.getStyleClass().add(
+                "recent-activity-title"
+        );
+
+        Label errorMessage =
+                new Label(
+                        message
+                );
+
+        errorMessage.setWrapText(
+                true
+        );
+
+        errorMessage.getStyleClass().add(
+                "card-text"
+        );
+
+        VBox errorState =
+                new VBox(
+                        8,
+                        errorTitle,
+                        errorMessage,
+                        dashboardRetryButton
+                );
+
+        recentActivityContent
+                .getChildren()
+                .add(
+                        errorState
+                );
+    }
+
+    private void retryDashboard() {
+
+        showDashboardLoading();
+        loadDashboard();
     }
 
     private void showRecentActivityLoading() {
@@ -895,10 +1024,9 @@ public class DashboardView extends VBox {
                             "Your latest builds, listings, flips and transactions will appear here."
                     );
 
-            emptyDescription
-                    .setWrapText(
-                            true
-                    );
+            emptyDescription.setWrapText(
+                    true
+            );
 
             emptyDescription
                     .getStyleClass()
@@ -968,6 +1096,10 @@ public class DashboardView extends VBox {
 
     private void showAnalyticsLoading() {
 
+        analyticsRetryButton.setDisable(
+                true
+        );
+
         Label loading =
                 new Label(
                         "Loading analytics..."
@@ -984,24 +1116,6 @@ public class DashboardView extends VBox {
                 );
     }
 
-    private void showAnalyticsError() {
-
-        Label error =
-                new Label(
-                        "Unable to load analytics."
-                );
-
-        error.getStyleClass().add(
-                "card-text"
-        );
-
-        analyticsContent
-                .getChildren()
-                .setAll(
-                        error
-                );
-    }
-
     private void renderAnalytics(
             DashboardAnalyticsResponse analytics
     ) {
@@ -1012,13 +1126,10 @@ public class DashboardView extends VBox {
                         || analytics.profitHistory().isEmpty()
         ) {
 
-            VBox emptyState =
-                    createAnalyticsEmptyState();
-
             analyticsContent
                     .getChildren()
                     .setAll(
-                            emptyState
+                            createAnalyticsEmptyState()
                     );
 
             return;
@@ -1034,6 +1145,105 @@ public class DashboardView extends VBox {
                 .setAll(
                         chart
                 );
+    }
+
+    private void showAnalyticsError(
+            String message
+    ) {
+
+        Label title =
+                new Label(
+                        "Analytics unavailable"
+                );
+
+        title.getStyleClass().add(
+                "recent-activity-title"
+        );
+
+        Label description =
+                new Label(
+                        message
+                );
+
+        description.setWrapText(
+                true
+        );
+
+        description.getStyleClass().add(
+                "card-text"
+        );
+
+        analyticsRetryButton.setDisable(
+                false
+        );
+
+        VBox errorState =
+                new VBox(
+                        8,
+                        title,
+                        description,
+                        analyticsRetryButton
+                );
+
+        analyticsContent
+                .getChildren()
+                .setAll(
+                        errorState
+                );
+    }
+
+    private void retryAnalytics() {
+
+        showAnalyticsLoading();
+        loadAnalytics();
+    }
+
+    private void handleSessionExpired() {
+
+        authSession.clear();
+
+        Platform.runLater(
+                onSessionExpired
+        );
+    }
+
+    private String friendlyErrorMessage(
+            ApiException exception
+    ) {
+
+        int statusCode =
+                exception.getStatusCode();
+
+        return switch (statusCode) {
+
+            case 400 ->
+                    "Ryvex received an invalid request.";
+
+            case 403 ->
+                    "You do not have permission to access this information.";
+
+            case 404 ->
+                    "The requested Ryvex service could not be found.";
+
+            case 500, 502, 503, 504 ->
+                    "Ryvex services are temporarily unavailable.";
+
+            default -> {
+
+                String message =
+                        exception.getMessage();
+
+                if (
+                        message == null
+                                || message.isBlank()
+                ) {
+
+                    yield "Something went wrong while contacting Ryvex.";
+                }
+
+                yield message;
+            }
+        };
     }
 
     private VBox createAnalyticsEmptyState() {
