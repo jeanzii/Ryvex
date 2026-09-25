@@ -1,6 +1,9 @@
 package com.ryvex.client.service;
 
 import com.ryvex.client.dto.auth.*;
+import com.ryvex.client.dto.dashboard.DashboardAnalyticsResponse;
+import com.ryvex.client.dto.dashboard.DashboardResponse;
+import com.ryvex.client.dto.pcbuild.*;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -9,8 +12,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import com.ryvex.client.dto.dashboard.DashboardResponse;
-import com.ryvex.client.dto.dashboard.DashboardAnalyticsResponse;
+import java.util.Arrays;
+import java.util.List;
 
 public class ApiService {
 
@@ -22,6 +25,12 @@ public class ApiService {
 
     private final ObjectMapper objectMapper =
             new ObjectMapper();
+
+    /*
+     * =========================================================
+     * SERVER STATUS
+     * =========================================================
+     */
 
     public boolean isServerOnline() {
 
@@ -50,6 +59,12 @@ public class ApiService {
             return false;
         }
     }
+
+    /*
+     * =========================================================
+     * AUTHENTICATION
+     * =========================================================
+     */
 
     public RegisterResponse register(
             String username,
@@ -114,35 +129,6 @@ public class ApiService {
         );
     }
 
-    public DashboardResponse getDashboard(
-            String accessToken
-    ) {
-
-        HttpRequest request =
-                HttpRequest.newBuilder()
-                        .uri(
-                                URI.create(
-                                        BASE_URL + "/api/dashboard"
-                                )
-                        )
-                        .header(
-                                "Authorization",
-                                "Bearer " + accessToken
-                        )
-                        .header(
-                                "Accept",
-                                "application/json"
-                        )
-                        .GET()
-                        .build();
-
-        return sendForJson(
-                request,
-                200,
-                DashboardResponse.class
-        );
-    }
-
     public TokenResponse refresh(
             String refreshToken
     ) {
@@ -175,6 +161,270 @@ public class ApiService {
         );
     }
 
+    /*
+     * =========================================================
+     * DASHBOARD
+     * =========================================================
+     */
+
+    public DashboardResponse getDashboard(
+            String accessToken
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedGetRequest(
+                        "/api/dashboard",
+                        accessToken
+                );
+
+        return sendForJson(
+                request,
+                200,
+                DashboardResponse.class
+        );
+    }
+
+    public DashboardAnalyticsResponse getDashboardAnalytics(
+            String accessToken
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedGetRequest(
+                        "/api/dashboard/analytics",
+                        accessToken
+                );
+
+        return sendForJson(
+                request,
+                200,
+                DashboardAnalyticsResponse.class
+        );
+    }
+
+    /*
+     * =========================================================
+     * PC BUILDER
+     * =========================================================
+     */
+
+    public List<PcBuildResponse> getBuilds(
+            String accessToken
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedGetRequest(
+                        "/api/builds",
+                        accessToken
+                );
+
+        PcBuildResponse[] builds =
+                sendForJson(
+                        request,
+                        200,
+                        PcBuildResponse[].class
+                );
+
+        return Arrays.asList(
+                builds
+        );
+    }
+
+    public PcBuildResponse getBuild(
+            String accessToken,
+            Long buildId
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedGetRequest(
+                        "/api/builds/" + buildId,
+                        accessToken
+                );
+
+        return sendForJson(
+                request,
+                200,
+                PcBuildResponse.class
+        );
+    }
+
+    public PcBuildResponse createBuild(
+            String accessToken,
+            String name
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedJsonRequest(
+                        "/api/builds",
+                        accessToken,
+                        "POST",
+                        new CreatePcBuildRequest(
+                                name
+                        )
+                );
+
+        return sendForJson(
+                request,
+                201,
+                PcBuildResponse.class
+        );
+    }
+
+    public PcBuildResponse updateBuild(
+            String accessToken,
+            Long buildId,
+            String name
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedJsonRequest(
+                        "/api/builds/" + buildId,
+                        accessToken,
+                        "PUT",
+                        new UpdatePcBuildRequest(
+                                name
+                        )
+                );
+
+        return sendForJson(
+                request,
+                200,
+                PcBuildResponse.class
+        );
+    }
+
+    public void deleteBuild(
+            String accessToken,
+            Long buildId
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedDeleteRequest(
+                        "/api/builds/" + buildId,
+                        accessToken
+                );
+
+        sendWithoutResponse(
+                request,
+                204
+        );
+    }
+
+    public PcBuildResponse assignComponent(
+            String accessToken,
+            Long buildId,
+            ComponentCategory category,
+            Long componentId
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedJsonRequest(
+                        "/api/builds/"
+                                + buildId
+                                + "/components/"
+                                + category.name(),
+                        accessToken,
+                        "PUT",
+                        new AssignComponentRequest(
+                                componentId
+                        )
+                );
+
+        return sendForJson(
+                request,
+                200,
+                PcBuildResponse.class
+        );
+    }
+
+    public PcBuildResponse removeComponent(
+            String accessToken,
+            Long buildId,
+            ComponentCategory category
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedDeleteRequest(
+                        "/api/builds/"
+                                + buildId
+                                + "/components/"
+                                + category.name(),
+                        accessToken
+                );
+
+        return sendForJson(
+                request,
+                200,
+                PcBuildResponse.class
+        );
+    }
+
+    /*
+     * =========================================================
+     * HARDWARE CATALOG
+     * =========================================================
+     */
+
+    public List<HardwareComponentResponse> getHardware(
+            String accessToken
+    ) {
+
+        HttpRequest request =
+                createAuthenticatedGetRequest(
+                        "/api/hardware",
+                        accessToken
+                );
+
+        HardwareComponentResponse[] components =
+                sendForJson(
+                        request,
+                        200,
+                        HardwareComponentResponse[].class
+                );
+
+        return Arrays.asList(
+                components
+        );
+    }
+
+    public List<HardwareComponentResponse> getHardware(
+            String accessToken,
+            ComponentCategory category
+    ) {
+
+        if (
+                category == null
+        ) {
+
+            return getHardware(
+                    accessToken
+            );
+        }
+
+        HttpRequest request =
+                createAuthenticatedGetRequest(
+                        "/api/hardware?category="
+                                + category.name(),
+                        accessToken
+                );
+
+        HardwareComponentResponse[] components =
+                sendForJson(
+                        request,
+                        200,
+                        HardwareComponentResponse[].class
+                );
+
+        return Arrays.asList(
+                components
+        );
+    }
+
+    /*
+     * =========================================================
+     * GENERIC POST
+     * =========================================================
+     */
+
     private <T> T post(
             String path,
             Object requestBody,
@@ -194,6 +444,12 @@ public class ApiService {
                 responseType
         );
     }
+
+    /*
+     * =========================================================
+     * REQUEST BUILDERS
+     * =========================================================
+     */
 
     private HttpRequest createPostRequest(
             String path,
@@ -223,7 +479,9 @@ public class ApiService {
                     )
                     .POST(
                             HttpRequest.BodyPublishers
-                                    .ofString(json)
+                                    .ofString(
+                                            json
+                                    )
                     )
                     .build();
 
@@ -235,6 +493,135 @@ public class ApiService {
             );
         }
     }
+
+    private HttpRequest createAuthenticatedGetRequest(
+            String path,
+            String accessToken
+    ) {
+
+        return HttpRequest.newBuilder()
+                .uri(
+                        URI.create(
+                                BASE_URL + path
+                        )
+                )
+                .header(
+                        "Authorization",
+                        "Bearer " + accessToken
+                )
+                .header(
+                        "Accept",
+                        "application/json"
+                )
+                .GET()
+                .build();
+    }
+
+    private HttpRequest createAuthenticatedDeleteRequest(
+            String path,
+            String accessToken
+    ) {
+
+        return HttpRequest.newBuilder()
+                .uri(
+                        URI.create(
+                                BASE_URL + path
+                        )
+                )
+                .header(
+                        "Authorization",
+                        "Bearer " + accessToken
+                )
+                .header(
+                        "Accept",
+                        "application/json"
+                )
+                .DELETE()
+                .build();
+    }
+
+    private HttpRequest createAuthenticatedJsonRequest(
+            String path,
+            String accessToken,
+            String method,
+            Object requestBody
+    ) {
+
+        try {
+
+            String json =
+                    objectMapper.writeValueAsString(
+                            requestBody
+                    );
+
+            HttpRequest.Builder builder =
+                    HttpRequest.newBuilder()
+                            .uri(
+                                    URI.create(
+                                            BASE_URL + path
+                                    )
+                            )
+                            .header(
+                                    "Authorization",
+                                    "Bearer " + accessToken
+                            )
+                            .header(
+                                    "Content-Type",
+                                    "application/json"
+                            )
+                            .header(
+                                    "Accept",
+                                    "application/json"
+                            );
+
+            return switch (method) {
+
+                case "POST" ->
+                        builder
+                                .POST(
+                                        HttpRequest.BodyPublishers
+                                                .ofString(
+                                                        json
+                                                )
+                                )
+                                .build();
+
+                case "PUT" ->
+                        builder
+                                .PUT(
+                                        HttpRequest.BodyPublishers
+                                                .ofString(
+                                                        json
+                                                )
+                                )
+                                .build();
+
+                default ->
+                        throw new ApiException(
+                                0,
+                                "Unsupported HTTP method: "
+                                        + method
+                        );
+            };
+
+        } catch (ApiException e) {
+
+            throw e;
+
+        } catch (Exception e) {
+
+            throw new ApiException(
+                    0,
+                    "Could not prepare the request."
+            );
+        }
+    }
+
+    /*
+     * =========================================================
+     * RESPONSE HANDLING
+     * =========================================================
+     */
 
     private <T> T sendForJson(
             HttpRequest request,
@@ -354,6 +741,12 @@ public class ApiService {
         }
     }
 
+    /*
+     * =========================================================
+     * ERROR HANDLING
+     * =========================================================
+     */
+
     private String extractErrorMessage(
             int statusCode,
             String body
@@ -362,7 +755,9 @@ public class ApiService {
         try {
 
             JsonNode json =
-                    objectMapper.readTree(body);
+                    objectMapper.readTree(
+                            body
+                    );
 
             String[] possibleFields = {
                     "detail",
@@ -371,10 +766,15 @@ public class ApiService {
                     "title"
             };
 
-            for (String field : possibleFields) {
+            for (
+                    String field
+                    : possibleFields
+            ) {
 
                 JsonNode value =
-                        json.get(field);
+                        json.get(
+                                field
+                        );
 
                 if (
                         value != null
@@ -400,8 +800,11 @@ public class ApiService {
             case 403 ->
                     "You are not allowed to perform this action.";
 
+            case 404 ->
+                    "The requested resource could not be found.";
+
             case 409 ->
-                    "That username or email is already in use.";
+                    "Ryvex could not complete the request because the data has changed.";
 
             case 500 ->
                     "Ryvex encountered a server error.";
@@ -409,35 +812,5 @@ public class ApiService {
             default ->
                     "Ryvex could not complete the request.";
         };
-    }
-
-    public DashboardAnalyticsResponse getDashboardAnalytics(
-            String accessToken
-    ) {
-
-        HttpRequest request =
-                HttpRequest.newBuilder()
-                        .uri(
-                                URI.create(
-                                        BASE_URL
-                                                + "/api/dashboard/analytics"
-                                )
-                        )
-                        .header(
-                                "Authorization",
-                                "Bearer " + accessToken
-                        )
-                        .header(
-                                "Accept",
-                                "application/json"
-                        )
-                        .GET()
-                        .build();
-
-        return sendForJson(
-                request,
-                200,
-                DashboardAnalyticsResponse.class
-        );
     }
 }

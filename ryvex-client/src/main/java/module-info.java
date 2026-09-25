@@ -11,4 +11,7 @@ module com.ryvex.client {
 
     opens com.ryvex.client.dto.dashboard
             to tools.jackson.databind;
+
+    opens com.ryvex.client.dto.pcbuild
+            to tools.jackson.databind;
 }
